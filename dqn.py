@@ -121,94 +121,90 @@ if __name__=="__main__":
 
     # hyperparameters
     BUFFERLIMIT = 50_000
-    MINI_BATCH_SIZE = 32
+    MINI_BATCH_SIZE = [32, 64, 128, 256]
     H_1 = 64
     H_2 = 64
     LEARNING_RATE = 0.0005
     LEARNING_RATE_DECAY = 0.00025 
-    DISCOUNT_RATE  = 0.99  
-    TAU = 0.01 # used when soft update is used
-    UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
+    DISCOUNT_RATE  = 0.99 
     EPISODES = 1000 # total nusmber of episodes to train for
     soft_update = True
-
-    env = gym.make("CartPole-v1") # select environment. Currently only tested on CartPole-v1
-    #test_env = gym.make("CartPole-v1")
-    #test_env = wrappers.Monitor(test_env, './videos/' + str(time.time()) + '/', video_callable=lambda episode_id: n_epi%10==0)
-    env.seed(seed_val)  # setting seed for the env
-    
-
-    input_shape = env.observation_space.shape[0]
-    output_shape = env.action_space.n
-    q = Qnet(input_shape,output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
-    q_target = Qnet(input_shape, output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
-    q_target.model.set_weights(q.model.get_weights())
-    memory = ReplayBuffer()
-    
-    ep_vec = [] # Vector to store ep_number for plotting
-    mean_score_vec = [] # vector to store score in this episode for plotting
-    std_vec =[]
-    savename = "soft_update_tau0_01"
-    save_performance="Performance/"+savename+".csv"
-    
+    # for future experiments, only change these three values
+    UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
+    TAU = 0.1 # used when soft update is used
+    target_dir = "tau0_1" # hard_update_20 50 100 200
 
     start_time = timeit.default_timer()
-    ##################################################################
-    for n_epi in range(EPISODES):
-        epsilon = max(0.01, (0.99 - 0.98/200*n_epi))
-        s = env.reset()
-        done = False
-        score = 0.
-        ##############################################################
-        while not done:
-            a = q.sample_action(tf.constant(s,shape=(1,input_shape)), epsilon) #select action from updated q net
-            s_prime, r, done, info = env.step(a)
-            memory.put((s,a,r,s_prime,int(done))) # insert into experience replay
-            s = s_prime
-            score += r
-            if done:
-                break
-        ###############################################################        
-        if(memory.size() >= 1000):
-            q.train(q_target, memory, MINI_BATCH_SIZE)    # update q net
-            q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
-        if(n_epi % 10 ==0):
-            ep_vec.append(n_epi)
-            mean_, std_ =test(n_epi, epsilon, q, seed_val)
-            mean_score_vec.append(mean_)
-            std_vec.append(std_)
-        #smoothened_score.append(0.9*smoothened_score[-1] + 0.1*mean_score_vec[-1])
-        # plt.plot(ep_vec,smoothened_score,'k') 
-        # plt.title("Score vs Episodes (Smoothened)")
-        # plt.ylim((0,500))
-        # plt.xlim((0,EPISODES))
-        # plt.xlabel('Episodes')
-        # plt.ylabel('Score per episode')
-        # plt.draw()
-        # plt.pause(1/120)
+
+    for i in range(len(MINI_BATCH_SIZE)):
+        env = gym.make("CartPole-v1") # select environment. Currently only tested on CartPole-v1
+        env.seed(seed_val)  # setting seed for the env
+
+        input_shape = env.observation_space.shape[0]
+        output_shape = env.action_space.n
+
+        q = Qnet(input_shape,output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
+        q_target = Qnet(input_shape, output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
+        q_target.model.set_weights(q.model.get_weights())
+        memory = ReplayBuffer()
+
+        ep_vec = [] # Vector to store ep_number for plotting
+        mean_score_vec = [] # vector to store score in this episode for plotting
+        std_vec =[]
+
+        savename = "soft_update_"+target_dir+"_minibatch_"+str(MINI_BATCH_SIZE[i])
+        save_performance = "Performance/"+target_dir+"/"+savename+".csv"
+        save_plot = "Performance/"+target_dir+"/"+savename+".png"
+        save_model = "Model/"+target_dir+"/DQN_"+savename
+        plot_title = "DQN-CartPole. Soft Update. TAU="+str(TAU)+". Mini-batch size="+str(MINI_BATCH_SIZE[i])
+
+        print("\n**************** Starting experiment on minibatch size: {} ****************\n".format(MINI_BATCH_SIZE[i]))
+
+        ##################################################################
+        for n_epi in range(EPISODES):
+            epsilon = max(0.01, (0.99 - 0.98/200*n_epi))
+            s = env.reset()
+            done = False
+            score = 0.
+            ##############################################################
+            while not done:
+                a = q.sample_action(tf.constant(s,shape=(1,input_shape)), epsilon) #select action from updated q net
+                s_prime, r, done, info = env.step(a)
+                memory.put((s,a,r,s_prime,int(done))) # insert into experience replay
+                s = s_prime
+                score += r
+                if done:
+                    break
+            ###############################################################        
+            if(memory.size() >= 1000):
+                q.train(q_target, memory, MINI_BATCH_SIZE[i])    # update q net
+                q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
+            if(n_epi % 1 ==0):
+                ep_vec.append(n_epi)
+                mean_, std_ =test(n_epi, epsilon, q, seed_val)
+                mean_score_vec.append(mean_)
+                std_vec.append(std_)        
+        ####################################################################   
+
+        ##### plot showing score vs episodes #######
+        y_max=list(map(add, mean_score_vec, std_vec))
+        y_min=list(map(sub, mean_score_vec, std_vec))
+        plt.ylim((0,500))
+        plt.xlim((0,EPISODES))
+        plt.xlabel('Episodes')
+        plt.ylabel('Rewards')
+        plt.title(plot_title)
+        plt.plot(ep_vec,mean_score_vec, color = '#0000FF')
+        plt.fill_between(ep_vec, y_min, y_max, color = '#0000FF', alpha=0.1)
+        plt.savefig(save_plot, dpi=300)
+        ########################################
+
+        ############ SAVING DATAS ###########################
+        performance_data = {'Episode':ep_vec, 'mean_score': mean_score_vec, 'std_dev': std_vec}
+        df = pd.DataFrame(performance_data) 
+        df.to_csv(save_performance, index=False)
         
-    ####################################################################    
+        q.model.save_weights(save_model)
+
     stop_time = timeit.default_timer()
     print("TIME TAKEN: {}".format(stop_time-start_time))
-    # test_env.close()
-    # plt.close()
-
-    ##### plot showing score vs episodes #######
-    y_max=list(map(add, mean_score_vec, std_vec))
-    y_min=list(map(sub, mean_score_vec, std_vec))
-    plt.ylim((0,500))
-    plt.xlim((0,EPISODES))
-    plt.xlabel('Episodes')
-    plt.ylabel('Rewards')
-    plt.title('DQN-CartPole. Soft Update. TAU=0.01')
-    plt.plot(ep_vec,mean_score_vec, color = '#0000FF')
-    plt.fill_between(ep_vec, y_min, y_max, color = '#0000FF', alpha=0.1)
-    plt.savefig('Performance/'+savename+'.png', dpi=300)
-    ########################################
-
-    ############ SAVING DATAS ###########################
-    performance_data = {'Episode':ep_vec, 'mean_score': mean_score_vec, 'std_dev': std_vec}
-    df = pd.DataFrame(performance_data) 
-    df.to_csv(save_performance, index=False)
-    q.model.save_weights('./Model/dqn_weights')
-    
