@@ -127,7 +127,7 @@ if __name__=="__main__":
     LEARNING_RATE = 0.0005
     LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
-    EPISODES = 1000 # total nusmber of episodes to train for
+    EPISODES = 1 #000 # total nusmber of episodes to train for
     soft_update = True
     # for future experiments, only change these three values
     UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
@@ -203,7 +203,7 @@ if __name__=="__main__":
         performance_data = {'Episode':ep_vec, 'mean_score': mean_score_vec, 'std_dev': std_vec}
         df = pd.DataFrame(performance_data) 
         df.to_csv(save_performance, index=False)
-        
+
         q.model.save_weights(save_model)
 
     stop_time = timeit.default_timer()
