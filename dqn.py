@@ -127,12 +127,22 @@ if __name__=="__main__":
     LEARNING_RATE = 0.0005
     LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
-    EPISODES = 1 #000 # total nusmber of episodes to train for
+    EPISODES = 1000 # total nusmber of episodes to train for
     soft_update = True
     # for future experiments, only change these three values
     UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
     TAU = 0.1 # used when soft update is used
     target_dir = "tau0_1" # hard_update_20 50 100 200
+
+    temp_env = gym.make("CartPole-v1")
+
+    input_shape = temp_env.observation_space.shape[0]
+    output_shape = temp_env.action_space.n
+
+    temp_q = Qnet(input_shape,output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
+    initial_weights = temp_q.model.get_weights()
+    del temp_q
+    del temp_env
 
     start_time = timeit.default_timer()
 
@@ -140,12 +150,10 @@ if __name__=="__main__":
         env = gym.make("CartPole-v1") # select environment. Currently only tested on CartPole-v1
         env.seed(seed_val)  # setting seed for the env
 
-        input_shape = env.observation_space.shape[0]
-        output_shape = env.action_space.n
-
         q = Qnet(input_shape,output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
         q_target = Qnet(input_shape, output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
-        q_target.model.set_weights(q.model.get_weights())
+        q.model.set_weights(initial_weights)
+        q_target.model.set_weights(initial_weights)
         memory = ReplayBuffer()
 
         ep_vec = [] # Vector to store ep_number for plotting
@@ -179,7 +187,7 @@ if __name__=="__main__":
             if(memory.size() >= 1000):
                 q.train(q_target, memory, MINI_BATCH_SIZE[i])    # update q net
                 q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
-            if(n_epi % 1 ==0):
+            if(n_epi % 10 ==0):
                 ep_vec.append(n_epi)
                 mean_, std_ =test(n_epi, epsilon, q, seed_val)
                 mean_score_vec.append(mean_)
@@ -205,6 +213,12 @@ if __name__=="__main__":
         df.to_csv(save_performance, index=False)
 
         q.model.save_weights(save_model)
+
+        del q
+        del q_target
+        del memory
+        del env
+
 
     stop_time = timeit.default_timer()
     print("TIME TAKEN: {}".format(stop_time-start_time))
