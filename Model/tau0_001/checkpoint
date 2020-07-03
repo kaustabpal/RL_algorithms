@@ -1,2 +1,2 @@
-model_checkpoint_path: "DQN_soft_update_tau0_001_minibatch_32"
-all_model_checkpoint_paths: "DQN_soft_update_tau0_001_minibatch_32"
+model_checkpoint_path: "DQN_soft_update_tau0_001_minibatch_256"
+all_model_checkpoint_paths: "DQN_soft_update_tau0_001_minibatch_256"

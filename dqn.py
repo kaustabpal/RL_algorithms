@@ -131,8 +131,8 @@ if __name__=="__main__":
     soft_update = True
     # for future experiments, only change these three values
     UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
-    TAU = 0.001 # used when soft update is used
-    target_dir = "tau0_001" # hard_update_20 50 100 200
+    TAU = 0.0001 # used when soft update is used
+    target_dir = "tau0_0001" # hard_update_20 50 100 200
 
     temp_env = gym.make("CartPole-v1")
 
