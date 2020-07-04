@@ -56,7 +56,7 @@ class Qnet:
         x = []
         y = []
         for s,a,r,s_prime,done in mini_batch:
-            max_future_q = np.amax(q_target.model.predict(tf.constant(s_prime,shape=(1,self.input_shape))))
+            max_future_q = np.amax(self.model.predict(tf.constant(s_prime,shape=(1,self.input_shape)))) # for no target. Change back to q_target.model.predict
             target = r + DISCOUNT_RATE*max_future_q*np.invert(done)
             current_q = self.model.predict(tf.constant(s,shape=(1,self.input_shape))) # current q_values for the actions
             current_q[0][a] = target # updating the q_value of the chosen action to that of the target q value
@@ -128,11 +128,11 @@ if __name__=="__main__":
     LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
     EPISODES = 1000 # total nusmber of episodes to train for
-    soft_update = True
+    soft_update = False
     # for future experiments, only change these three values
     UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
     TAU = 0.0001 # used when soft update is used
-    target_dir = "tau0_0001" # hard_update_20 50 100 200
+    target_dir = "No_target" # hard_update_20 50 100 200
 
     temp_env = gym.make("CartPole-v1")
 
@@ -160,11 +160,11 @@ if __name__=="__main__":
         mean_score_vec = [] # vector to store score in this episode for plotting
         std_vec =[]
 
-        savename = "soft_update_"+target_dir+"_minibatch_"+str(MINI_BATCH_SIZE[i])
+        savename = "No_target_minibatch_"+str(MINI_BATCH_SIZE[i])
         save_performance = "Performance/"+target_dir+"/"+savename+".csv"
         save_plot = "Performance/"+target_dir+"/"+savename+".png"
         save_model = "Model/"+target_dir+"/DQN_"+savename
-        plot_title = "DQN-CartPole. Soft Update. TAU="+str(TAU)+". Mini-batch size="+str(MINI_BATCH_SIZE[i])
+        plot_title = "DQN-CartPole. No Target)
 
         print("\n**************** Starting experiment on minibatch size: {} ****************\n".format(MINI_BATCH_SIZE[i]))
 
@@ -186,7 +186,7 @@ if __name__=="__main__":
             ###############################################################        
             if(memory.size() >= 1000):
                 q.train(q_target, memory, MINI_BATCH_SIZE[i])    # update q net
-                q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
+                #q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
             if(n_epi % 10 ==0):
                 ep_vec.append(n_epi)
                 mean_, std_ =test(n_epi, epsilon, q, seed_val)
@@ -198,13 +198,13 @@ if __name__=="__main__":
         y_max=list(map(add, mean_score_vec, std_vec))
         y_min=list(map(sub, mean_score_vec, std_vec))
         plt.ylim((0,500))
-        plt.xlim((0,EPISODES))
+        plt.xlim((0,EPISODES-10))
         plt.xlabel('Episodes')
         plt.ylabel('Rewards')
         plt.title(plot_title)
-        plt.plot(ep_vec,mean_score_vec, color = '#0000FF')
-        plt.fill_between(ep_vec, y_min, y_max, color = '#0000FF', alpha=0.1)
-        plt.savefig(save_plot, dpi=300)
+        plt.plot(ep_vec,mean_score_vec)
+        plt.fill_between(ep_vec, y_min, y_max, alpha=0.1)
+        
         ########################################
 
         ############ SAVING DATAS ###########################
@@ -219,6 +219,6 @@ if __name__=="__main__":
         del memory
         del env
 
-
+    plt.savefig(save_plot)
     stop_time = timeit.default_timer()
     print("TIME TAKEN: {}".format(stop_time-start_time))
