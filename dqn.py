@@ -164,7 +164,7 @@ if __name__=="__main__":
         save_performance = "Performance/"+target_dir+"/"+savename+".csv"
         save_plot = "Performance/"+target_dir+"/"+savename+".png"
         save_model = "Model/"+target_dir+"/DQN_"+savename
-        plot_title = "DQN-CartPole. No Target)
+        plot_title = "DQN-CartPole. No Target"
 
         print("\n**************** Starting experiment on minibatch size: {} ****************\n".format(MINI_BATCH_SIZE[i]))
 
