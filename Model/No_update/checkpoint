@@ -1,0 +1,2 @@
+model_checkpoint_path: "DQN_No_update_minibatch_256"
+all_model_checkpoint_paths: "DQN_No_update_minibatch_256"
