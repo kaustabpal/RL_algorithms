@@ -127,12 +127,12 @@ if __name__=="__main__":
     LEARNING_RATE = 0.0005
     LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
-    EPISODES = 2000 # total nusmber of episodes to train for
-    soft_update = False
+    EPISODES = 1000 # total nusmber of episodes to train for
+    soft_update = True
     # for future experiments, only change these three values
     UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
     TAU = 0.0001 # used when soft update is used
-    target_dir = "No_update" # hard_update_20 50 100 200
+    target_dir = "tau0_0001" # hard_update_20 50 100 200
 
     temp_env = gym.make("CartPole-v1")
 
@@ -160,11 +160,11 @@ if __name__=="__main__":
         mean_score_vec = [] # vector to store score in this episode for plotting
         std_vec =[]
 
-        savename = "New_No_update_minibatch_"+str(MINI_BATCH_SIZE[i])
+        savename = "New_soft_update_tau0_0001_minibatch_"+str(MINI_BATCH_SIZE[i])
         save_performance = "Performance/"+target_dir+"/"+savename+".csv"
         save_plot = "Performance/"+target_dir+"/"+savename+".png"
         save_model = "Model/"+target_dir+"/DQN_"+savename
-        plot_title = "DQN-CartPole. Target network not updated."
+        plot_title = "DQN-CartPole. Soft update. TAU = 0.0001"
 
         print("\n**************** Starting experiment on minibatch size: {} ****************\n".format(MINI_BATCH_SIZE[i]))
 
@@ -186,7 +186,7 @@ if __name__=="__main__":
             ###############################################################        
             if(memory.size() >= 1000):
                 q.train(q_target, memory, MINI_BATCH_SIZE[i])    # update q net
-                #q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
+                q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
             if(n_epi % 10 ==0):
                 ep_vec.append(n_epi)
                 mean_, std_ =test(n_epi, epsilon, q, seed_val)
