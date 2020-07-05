@@ -114,25 +114,25 @@ def test(n_epi, epsilon, q, seed_val):
 
 if __name__=="__main__":
 
-    seed_val = 1
+    seed_val = 0
     np.random.seed(seed_val)
     tf.random.set_seed(seed_val)
     random.seed(seed_val)
 
     # hyperparameters
     BUFFERLIMIT = 50_000
-    MINI_BATCH_SIZE = [64] #[32, 64, 128, 256]
+    MINI_BATCH_SIZE = [32, 64, 128, 256]
     H_1 = 64
     H_2 = 64
     LEARNING_RATE = 0.0005
     LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
     EPISODES = 1000 # total nusmber of episodes to train for
-    soft_update = True
+    soft_update = False
     # for future experiments, only change these three values
-    UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
+    UPDATE_TARGET_INTERVAL = 20  # Used when hard update is used 
     TAU = 0.0001 # used when soft update is used
-    target_dir = "tau0_0001" # hard_update_20 50 100 200
+    target_dir = "hard_update_20" # hard_update_20 50 100 200
 
     temp_env = gym.make("CartPole-v1")
 
@@ -160,11 +160,11 @@ if __name__=="__main__":
         mean_score_vec = [] # vector to store score in this episode for plotting
         std_vec =[]
 
-        savename = "New_soft_update_tau0_0001_minibatch_"+str(MINI_BATCH_SIZE[i])
+        savename = target_dir+"_minibatch_"+str(MINI_BATCH_SIZE[i])
         save_performance = "Performance/"+target_dir+"/"+savename+".csv"
         save_plot = "Performance/"+target_dir+"/"+savename+".png"
         save_model = "Model/"+target_dir+"/DQN_"+savename
-        plot_title = "DQN-CartPole. Soft update. TAU = 0.0001"
+        plot_title = "DQN-CartPole. Hard update. Update interval = 20."
 
         print("\n**************** Starting experiment on minibatch size: {} ****************\n".format(MINI_BATCH_SIZE[i]))
 
