@@ -71,6 +71,7 @@ class Qnet:
             # hard update
             if(ep_num % update_interval == 0):
                 target_theta = q.model.get_weights()
+                self.model.set_weights(target_theta)
                 print("Target Update")
         else:
             # soft update
@@ -81,7 +82,7 @@ class Qnet:
                 target_weight = target_weight * (1-tau) + q_weight * tau
                 target_theta[counter] = target_weight
                 counter += 1
-        self.model.set_weights(target_theta)
+            self.model.set_weights(target_theta)
     
     def sample_action(self, obs, epsilon):
         coin = random.random()
