@@ -6,15 +6,15 @@ from operator import sub
 #sns.set()
 
 orange = "#fe8112"
-plot_title = "DQN-CartPole. Hard Update. Update interval = 20"
+plot_title = "DQN-CartPole. Hard Update. Update interval = 100"
 beta = 0.88
 TAU0_ = "0001"
 MINI_BATCH_SIZE = [32, 64, 128, 256]
 MINI_BATCH_COL = ['#f700ff', '#0000ff', '#00ff44', '#ffa600']
 col_names = ['Episode', 'mean_score', 'std_dev']
-save_plot = "hard_update_20.png"
+save_plot = "hard_update_100.png"
 for i in range(len(MINI_BATCH_SIZE)):
-    read_performance="hard_update_20_minibatch_"+str(MINI_BATCH_SIZE[i])+".csv"
+    read_performance="hard_update_100_minibatch_"+str(MINI_BATCH_SIZE[i])+".csv"
     data = pd.read_csv(read_performance, names=col_names)
     episode = data.Episode.tolist()[1:]
     episode[:]=[int(e) for e in episode]
@@ -36,9 +36,7 @@ for i in range(len(MINI_BATCH_SIZE)):
     plt.plot(episode,score, label="MINI_BATCH_SIZE ="+str(MINI_BATCH_SIZE[i])) #, color = MINI_BATCH_COL[i])
     plt.fill_between(episode, y_min, y_max, alpha=0.1)
 #############################################################################
-x = episode[::2]
-print(x)
-plt.vlines(x,0,500,color ='k', linestyles = 'dotted')
+plt.vlines([100,200,300,400,500,600,700,800,900],0,500,color ='k', linestyles = 'dotted')
 plt.legend(loc="upper left")
 #plt.show()
 plt.savefig(save_plot)

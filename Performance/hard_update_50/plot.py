@@ -36,6 +36,7 @@ for i in range(len(MINI_BATCH_SIZE)):
     plt.plot(episode,score, label="MINI_BATCH_SIZE ="+str(MINI_BATCH_SIZE[i])) #, color = MINI_BATCH_COL[i])
     plt.fill_between(episode, y_min, y_max, alpha=0.1)
 #############################################################################
+plt.vlines([50,100,150,200,250,300,350,400,450,500,550,600,650,700,750,800,850,900],0,500,color ='k', linestyles = 'dotted')
 plt.legend(loc="upper left")
 #plt.show()
 plt.savefig(save_plot)

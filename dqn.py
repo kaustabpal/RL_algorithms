@@ -131,7 +131,7 @@ if __name__=="__main__":
     EPISODES = 1000 # total nusmber of episodes to train for
     soft_update = False
     # for future experiments, only change these three values
-    UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
+    UPDATE_TARGET_INTERVAL = 200  # Used when hard update is used 
     TAU = 0.0001 # used when soft update is used
     target_dir = "hard_update_100" # hard_update_20 50 100 200
 
