@@ -122,18 +122,18 @@ if __name__=="__main__":
 
     # hyperparameters
     BUFFERLIMIT = 50_000
-    MINI_BATCH_SIZE = [32, 64, 128, 256]
+    MINI_BATCH_SIZE = [128] #[32, 64, 128, 256]
     H_1 = 64
     H_2 = 64
     LEARNING_RATE = 0.0005
     LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
-    EPISODES = 1000 # total nusmber of episodes to train for
+    EPISODES = 2000 # total nusmber of episodes to train for
     soft_update = False
     # for future experiments, only change these three values
-    UPDATE_TARGET_INTERVAL = 200  # Used when hard update is used 
+    UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
     TAU = 0.0001 # used when soft update is used
-    target_dir = "hard_update_200" # hard_update_20 50 100 200
+    target_dir = "hard_update_100" # hard_update_20 50 100 200
 
     temp_env = gym.make("CartPole-v1")
 
@@ -161,7 +161,7 @@ if __name__=="__main__":
         mean_score_vec = [] # vector to store score in this episode for plotting
         std_vec =[]
 
-        savename = target_dir+"_minibatch_"+str(MINI_BATCH_SIZE[i])
+        savename = "new_"+target_dir+"_minibatch_"+str(MINI_BATCH_SIZE[i])
         save_performance = "Performance/"+target_dir+"/"+savename+".csv"
         save_plot = "Performance/"+target_dir+"/"+savename+".png"
         save_model = "Model/"+target_dir+"/DQN_"+savename
