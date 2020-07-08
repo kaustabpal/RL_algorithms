@@ -6,15 +6,15 @@ from operator import sub
 #sns.set()
 
 orange = "#fe8112"
-plot_title = "DQN-CartPole. Soft Update. TAU = 0.0001"
+plot_title = "DQN-CartPole. Number of hidden Layer = 2."
 beta = 0.88
 TAU0_ = "0001"
-MINI_BATCH_SIZE = [64] #[32, 64, 128, 256]
-MINI_BATCH_COL = ['#f700ff', '#0000ff', '#00ff44', '#ffa600']
+MINI_BATCH_SIZE = [256] #[32, 64, 128, 256]
+MINI_BATCH_COL = ['#f700ff', '#0000ff', '#00ff44', '#d83132']
 col_names = ['Episode', 'mean_score', 'std_dev']
-save_plot = "new_soft_update_tau0_"+TAU0_+".png"
+save_plot = "hidden_layer_2.png"
 for i in range(len(MINI_BATCH_SIZE)):
-    read_performance="New_soft_update_tau0_0001_minibatch_64.csv"
+    read_performance="soft_update_tau0_0001_minibatch_256.csv"
     data = pd.read_csv(read_performance, names=col_names)
     episode = data.Episode.tolist()[1:]
     episode[:]=[int(e) for e in episode]
@@ -33,8 +33,8 @@ for i in range(len(MINI_BATCH_SIZE)):
     plt.xlabel('Episodes')
     plt.ylabel('Rewards')
     plt.title(plot_title)
-    plt.plot(episode,score, label="MINI_BATCH_SIZE ="+str(MINI_BATCH_SIZE[i]), color = orange) #, color = MINI_BATCH_COL[i])
-    plt.fill_between(episode, y_min, y_max, alpha=0.1, color = orange)
+    plt.plot(episode,score, label="MINI_BATCH_SIZE ="+str(MINI_BATCH_SIZE[i]), color = MINI_BATCH_COL[3]) #, color = MINI_BATCH_COL[i])
+    plt.fill_between(episode, y_min, y_max, alpha=0.1, color = MINI_BATCH_COL[3])
 #############################################################################
 plt.legend(loc="upper left")
 #plt.show()
