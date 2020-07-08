@@ -46,9 +46,9 @@ class Qnet:
         self.h2 = h2
         self.model = tf.keras.models.Sequential([
             tf.keras.layers.Dense(self.h1, input_shape=(self.input_shape,), activation="relu"), # 1st hidden layer
-            #tf.keras.layers.Dense(self.h2, activation="relu"), # 2nd hidden layer
-            #tf.keras.layers.Dense(self.h2, activation="relu"), # 3rd hidden layer
-            #tf.keras.layers.Dense(self.h2, activation="relu"), # 4th hidden layer
+            tf.keras.layers.Dense(self.h2, activation="relu"), # 2nd hidden layer
+            tf.keras.layers.Dense(self.h2, activation="relu"), # 3rd hidden layer
+            tf.keras.layers.Dense(self.h2, activation="relu"), # 4th hidden layer
             #tf.keras.layers.Dense(self.h2, activation="relu"), # 5th hidden layer
             tf.keras.layers.Dense(self.output_shape, activation = "linear")         
         ])
@@ -128,7 +128,7 @@ if __name__=="__main__":
     MINI_BATCH_SIZE =[256] # [32, 64, 128, 256]
     H_1 = 64
     H_2 = 64
-    HIDDEN_LAYERS = 1
+    HIDDEN_LAYERS = 4
     LEARNING_RATE = 0.0005
     DISCOUNT_RATE  = 0.99 
     EPISODES = 1000 # total nusmber of episodes to train for
