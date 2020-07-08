@@ -118,7 +118,7 @@ def test(n_epi, epsilon, q, seed_val):
 
 if __name__=="__main__":
 
-    seed_val = 1
+    seed_val = 0
     np.random.seed(seed_val)
     tf.random.set_seed(seed_val)
     random.seed(seed_val)
@@ -130,7 +130,6 @@ if __name__=="__main__":
     H_2 = 64
     HIDDEN_LAYERS = 3
     LEARNING_RATE = 0.0005
-    LEARNING_RATE_DECAY = 0.00025 
     DISCOUNT_RATE  = 0.99 
     EPISODES = 1000 # total nusmber of episodes to train for
     soft_update = True
