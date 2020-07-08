@@ -1,2 +1,2 @@
-model_checkpoint_path: "DQN_hard_update_100_minibatch_256"
-all_model_checkpoint_paths: "DQN_hard_update_100_minibatch_256"
+model_checkpoint_path: "DQN_new_hard_update_100_minibatch_256"
+all_model_checkpoint_paths: "DQN_new_hard_update_100_minibatch_256"
