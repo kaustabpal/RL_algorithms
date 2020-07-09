@@ -1,2 +1,2 @@
-model_checkpoint_path: "DQN_hidden_layer_4"
-all_model_checkpoint_paths: "DQN_hidden_layer_4"
+model_checkpoint_path: "DQN_new_hidden_layer_4"
+all_model_checkpoint_paths: "DQN_new_hidden_layer_4"

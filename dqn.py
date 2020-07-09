@@ -47,8 +47,8 @@ class Qnet:
         self.model = tf.keras.models.Sequential([
             tf.keras.layers.Dense(self.h1, input_shape=(self.input_shape,), activation="relu"), # 1st hidden layer
             tf.keras.layers.Dense(self.h2, activation="relu"), # 2nd hidden layer
-            tf.keras.layers.Dense(self.h2, activation="relu"), # 3rd hidden layer
-            tf.keras.layers.Dense(self.h2, activation="relu"), # 4th hidden layer
+            #tf.keras.layers.Dense(self.h2, activation="relu"), # 3rd hidden layer
+            #tf.keras.layers.Dense(self.h2, activation="relu"), # 4th hidden layer
             #tf.keras.layers.Dense(self.h2, activation="relu"), # 5th hidden layer
             tf.keras.layers.Dense(self.output_shape, activation = "linear")         
         ])
@@ -118,7 +118,7 @@ def test(n_epi, epsilon, q, seed_val):
 
 if __name__=="__main__":
 
-    seed_val = 0
+    seed_val = 1
     np.random.seed(seed_val)
     tf.random.set_seed(seed_val)
     random.seed(seed_val)
@@ -164,7 +164,7 @@ if __name__=="__main__":
         mean_score_vec = [] # vector to store score in this episode for plotting
         std_vec =[]
 
-        savename = target_dir+"_"+str(HIDDEN_LAYERS)
+        savename = "new_"+target_dir+"_"+str(HIDDEN_LAYERS)
         save_performance = "Performance/"+target_dir+"/"+savename+".csv"
         save_plot = "Performance/"+target_dir+"/"+savename+".png"
         save_model = "Model/"+target_dir+"/DQN_"+savename
