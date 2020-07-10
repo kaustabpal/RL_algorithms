@@ -1,7 +1,9 @@
 import time
 import timeit
 import math
+import os
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import pandas as pd
 import gym
 from gym import wrappers
@@ -38,20 +40,19 @@ class ReplayBuffer:
 ######################################################################
 
 class Qnet:
-    def __init__(self, observation_space, action_space, learning_rate, h1 = 64, h2 = 64):
+    def __init__(self, hidden_layers = 2, observation_space = 4, action_space = 2, learning_rate = 0.0001, units = 64):
         self.input_shape = observation_space
         self.output_shape = action_space
         self.learning_rate = learning_rate
-        self.h1 = h1
-        self.h2 = h2
-        self.model = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(self.h1, input_shape=(self.input_shape,), activation="relu"), # 1st hidden layer
-            tf.keras.layers.Dense(self.h2, activation="relu"), # 2nd hidden layer
-            #tf.keras.layers.Dense(self.h2, activation="relu"), # 3rd hidden layer
-            #tf.keras.layers.Dense(self.h2, activation="relu"), # 4th hidden layer
-            #tf.keras.layers.Dense(self.h2, activation="relu"), # 5th hidden layer
-            tf.keras.layers.Dense(self.output_shape, activation = "linear")         
-        ])
+        self.units = units
+        
+        self.model = tf.keras.models.Sequential()
+        self.model.add(tf.keras.layers.Dense(self.units, input_shape=(self.input_shape,), activation = "relu")) # 1st hidden layer
+        for i in range(hidden_layers-1):
+            self.model.add(tf.keras.layers.Dense(self.units, activation = "relu"))
+
+        self.model.add(tf.keras.layers.Dense(self.output_shape, activation = "linear"))
+
         self.model.compile(optimizer =tf.keras.optimizers.Adam(lr=self.learning_rate), loss="mse")
     
     def train(self,q_target,replay,mini_batch_size=32):
@@ -94,8 +95,29 @@ class Qnet:
         else:
             return np.argmax(self.model.predict(obs))
 ######################################################################
+def record_video(rec_env, q , n_epi, vid_dir, frame_number):
+    s = rec_env.reset()
+    done = False
+    plt.imshow(rec_env.render(mode='rgb_array'))
+    plt.title("DQN-CartPole. | Episode: %d" % (n_epi))
+    plt.axis('off')        
+    plt.savefig(vid_dir+"image"+str(t)+".png")
+    
+    while not done:
+        a = np.argmax(q.model.predict(tf.constant(s,shape=(1,input_shape))))
+        s_prime, _ , done, _ = rec_env.step(a)
+        s = s_prime
+        frame_number += 1
+        plt.imshow(rec_env.render(mode='rgb_array'))
+        plt.title("DQN-CartPole. | Episode: %d" % (n_epi))
+        plt.axis('off')  
+        plt.savefig(vid_dir+"image"+str(frame_number)+".png")
+        if done:
+            rec_env.close()
+            break
+    return frame_number
 
-def test(n_epi, epsilon, q, seed_val):
+def test(n_epi, epsilon, q, seed_val, vid_dir, frame_number):
     rwrd = []
     test_env = gym.make("CartPole-v1")
     test_env.seed(seed_val) # setting seed for the test_env
@@ -111,118 +133,119 @@ def test(n_epi, epsilon, q, seed_val):
             if test_done:
                 rwrd.append(test_score)
                 break
+    frame_number = record_video(test_env, q , n_epi, vid_dir, frame_number)
     mean_score = np.mean(rwrd)
     std_score = round(np.std(rwrd),3)
     print("Episode: {}. Score: {}. Std: {}. Epsilon: {}".format(n_epi, mean_score, std_score, round(epsilon,3)))
-    return mean_score, std_score  
+    return mean_score, std_score, frame_number  
+
 
 if __name__=="__main__":
 
-    seed_val = 1
+    ######## hyperparameters###################
+    BUFFERLIMIT = 50_000
+    MINI_BATCH_SIZE = 32 
+    HIDDEN_LAYERS = 2
+    HIDDEN_LAYER_UNITS = 64
+    LEARNING_RATE = 0.0005
+    DISCOUNT_RATE  = 0.99 
+    EPISODES = 100 # total nusmber of episodes to train for
+    UPDATE_TARGET_INTERVAL = 100  # target update interval for hard update
+    TAU = 0.0001 # used when soft update is used
+    ############################################
+
+    seed_val = 0
+    soft_update = True
+    log_dir = "final_experiment" # directory name to store log data
+    exp_name = "final_experiment" # name of the experiment
+    plot_title = "DQN-CartPole. Final Experiment" # title of the plot
+
+    #############################################    
+
     np.random.seed(seed_val)
     tf.random.set_seed(seed_val)
     random.seed(seed_val)
 
-    # hyperparameters
-    BUFFERLIMIT = 50_000
-    MINI_BATCH_SIZE =[256] # [32, 64, 128, 256]
-    H_1 = 64
-    H_2 = 64
-    HIDDEN_LAYERS = 4
-    LEARNING_RATE = 0.0005
-    DISCOUNT_RATE  = 0.99 
-    EPISODES = 1000 # total nusmber of episodes to train for
-    soft_update = True
-    # for future experiments, only change these three values
-    UPDATE_TARGET_INTERVAL = 100  # Used when hard update is used 
-    TAU = 0.0001 # used when soft update is used
-    target_dir = "hidden_layer" # hard_update_20 50 100 200
+    env = gym.make("CartPole-v1") # select environment. Currently only tested on CartPole-v1
+    env.seed(seed_val)  # setting seed for the env
+    input_shape = env.observation_space.shape[0] # input shape for the neural net
+    output_shape = env.action_space.n # output shape for the neural net
 
-    temp_env = gym.make("CartPole-v1")
+    q = Qnet(hidden_layers = HIDDEN_LAYERS, observation_space = input_shape, action_space = output_shape, learning_rate = LEARNING_RATE, units = HIDDEN_LAYER_UNITS) # the main Q-network
+    q_target = Qnet(hidden_layers = HIDDEN_LAYERS, observation_space = input_shape, action_space = output_shape, learning_rate = LEARNING_RATE, units = HIDDEN_LAYER_UNITS) # the target network Q-target
+    q_target.model.set_weights(q.model.get_weights()) # initializing Q-target weights to the weights of the main Q-network
+    memory = ReplayBuffer() # Experience Replay Buffer
 
-    input_shape = temp_env.observation_space.shape[0]
-    output_shape = temp_env.action_space.n
+    ep_vec = [] # Vector to store ep_number for plotting
+    mean_score_vec = [] # vector to store score in this episode for plotting
+    std_vec =[] # vector to store standard deviation of rewards
+    frame_number = 0 # frame number of progress video
 
-    temp_q = Qnet(input_shape,output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
-    initial_weights = temp_q.model.get_weights()
-    del temp_q
-    del temp_env
+    savename = exp_name
+    performance_dir = "Performance/"+log_dir+"/"
+    if not os.path.exists(performance_dir):
+        os.mkdir(performance_dir)
+    save_performance = performance_dir+savename+".csv"
+    save_plot = performance_dir+savename+".png"
+
+    model_dir = "Model/"+log_dir+"/"
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)    
+    save_model = model_dir+"DQN_"+savename
+
+    vid_dir = "Video/"+log_dir+"/"
+    if not os.path.exists(vid_dir):
+        os.mkdir(vid_dir)
+    save_vid_cmd = "ffmpeg -y -framerate 12 -i "+vid_dir+"image%d.png -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p progress.mp4"
 
     start_time = timeit.default_timer()
 
-    for i in range(len(MINI_BATCH_SIZE)):
-        env = gym.make("CartPole-v1") # select environment. Currently only tested on CartPole-v1
-        env.seed(seed_val)  # setting seed for the env
+    ##################################################################
+    for n_epi in range(EPISODES+1):
+        epsilon = max(0.01, (0.99 - 0.98/200*n_epi))
+        s = env.reset()
+        done = False
+        score = 0.
+        ##############################################################
+        while not done:
+            a = q.sample_action(tf.constant(s,shape=(1,input_shape)), epsilon) #select action from updated q net
+            s_prime, r, done, info = env.step(a)
+            memory.put((s,a,r,s_prime,int(done))) # insert into experience replay
+            s = s_prime
+            score += r
+            if done:
+                break
+        ###############################################################        
+        if(memory.size() >= 1000):
+            q.train(q_target, memory, MINI_BATCH_SIZE)    # update q net
+            q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
+        if(n_epi % 10 ==0):
+            ep_vec.append(n_epi)
+            mean_, std_, frame_number =test(n_epi, epsilon, q, seed_val, vid_dir, frame_number)
+            mean_score_vec.append(mean_)
+            std_vec.append(std_)        
+    ####################################################################   
 
-        q = Qnet(input_shape,output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
-        q_target = Qnet(input_shape, output_shape, LEARNING_RATE, h1= H_1, h2 = H_2)
-        q.model.set_weights(initial_weights)
-        q_target.model.set_weights(initial_weights)
-        memory = ReplayBuffer()
+    # ##### plot showing score vs episodes #######
+    # y_max=list(map(add, mean_score_vec, std_vec))
+    # y_min=list(map(sub, mean_score_vec, std_vec))
+    # plt.ylim((0,500))
+    # plt.xlim((0,EPISODES-10))
+    # plt.xlabel('Episodes')
+    # plt.ylabel('Rewards')
+    # plt.title(plot_title)
+    # plt.plot(ep_vec,mean_score_vec)
+    # plt.fill_between(ep_vec, y_min, y_max, alpha=0.1)
+    
+    ########################################
 
-        ep_vec = [] # Vector to store ep_number for plotting
-        mean_score_vec = [] # vector to store score in this episode for plotting
-        std_vec =[]
+    ############ SAVING DATAS ###########################
+    performance_data = {'Episode':ep_vec, 'mean_score': mean_score_vec, 'std_dev': std_vec}
+    df = pd.DataFrame(performance_data) 
+    df.to_csv(save_performance, index=False)
 
-        savename = "new_"+target_dir+"_"+str(HIDDEN_LAYERS)
-        save_performance = "Performance/"+target_dir+"/"+savename+".csv"
-        save_plot = "Performance/"+target_dir+"/"+savename+".png"
-        save_model = "Model/"+target_dir+"/DQN_"+savename
-        plot_title = "DQN-CartPole. Number of hidden layers ="+str(HIDDEN_LAYERS)+"."
+    q.model.save_weights(save_model)
 
-        print("\n**************** Starting experiment on minibatch size: {} ****************\n".format(MINI_BATCH_SIZE[i]))
-
-        ##################################################################
-        for n_epi in range(EPISODES):
-            epsilon = max(0.01, (0.99 - 0.98/200*n_epi))
-            s = env.reset()
-            done = False
-            score = 0.
-            ##############################################################
-            while not done:
-                a = q.sample_action(tf.constant(s,shape=(1,input_shape)), epsilon) #select action from updated q net
-                s_prime, r, done, info = env.step(a)
-                memory.put((s,a,r,s_prime,int(done))) # insert into experience replay
-                s = s_prime
-                score += r
-                if done:
-                    break
-            ###############################################################        
-            if(memory.size() >= 1000):
-                q.train(q_target, memory, MINI_BATCH_SIZE[i])    # update q net
-                q_target.update_weight(q, ep_num=n_epi, update_interval=UPDATE_TARGET_INTERVAL, tau=TAU, soft=soft_update)
-            if(n_epi % 10 ==0):
-                ep_vec.append(n_epi)
-                mean_, std_ =test(n_epi, epsilon, q, seed_val)
-                mean_score_vec.append(mean_)
-                std_vec.append(std_)        
-        ####################################################################   
-
-        ##### plot showing score vs episodes #######
-        y_max=list(map(add, mean_score_vec, std_vec))
-        y_min=list(map(sub, mean_score_vec, std_vec))
-        plt.ylim((0,500))
-        plt.xlim((0,EPISODES-10))
-        plt.xlabel('Episodes')
-        plt.ylabel('Rewards')
-        plt.title(plot_title)
-        plt.plot(ep_vec,mean_score_vec)
-        plt.fill_between(ep_vec, y_min, y_max, alpha=0.1)
-        
-        ########################################
-
-        ############ SAVING DATAS ###########################
-        performance_data = {'Episode':ep_vec, 'mean_score': mean_score_vec, 'std_dev': std_vec}
-        df = pd.DataFrame(performance_data) 
-        df.to_csv(save_performance, index=False)
-
-        q.model.save_weights(save_model)
-
-        del q
-        del q_target
-        del memory
-        del env
-
-    plt.savefig(save_plot)
+    os.system(save_vid_cmd)
     stop_time = timeit.default_timer()
     print("TIME TAKEN: {}".format(stop_time-start_time))
