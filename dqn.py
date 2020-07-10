@@ -3,7 +3,6 @@ import timeit
 import math
 import os
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import pandas as pd
 import gym
 from gym import wrappers
@@ -95,27 +94,6 @@ class Qnet:
         else:
             return np.argmax(self.model.predict(obs))
 ######################################################################
-def record_video(rec_env, q , n_epi, vid_dir, frame_number):
-    s = rec_env.reset()
-    done = False
-    plt.imshow(rec_env.render(mode='rgb_array'))
-    plt.title("DQN-CartPole. | Episode: %d" % (n_epi))
-    plt.axis('off')        
-    plt.savefig(vid_dir+"image"+str(t)+".png")
-    
-    while not done:
-        a = np.argmax(q.model.predict(tf.constant(s,shape=(1,input_shape))))
-        s_prime, _ , done, _ = rec_env.step(a)
-        s = s_prime
-        frame_number += 1
-        plt.imshow(rec_env.render(mode='rgb_array'))
-        plt.title("DQN-CartPole. | Episode: %d" % (n_epi))
-        plt.axis('off')  
-        plt.savefig(vid_dir+"image"+str(frame_number)+".png")
-        if done:
-            rec_env.close()
-            break
-    return frame_number
 
 def test(n_epi, epsilon, q, seed_val, vid_dir, frame_number):
     rwrd = []
@@ -133,7 +111,7 @@ def test(n_epi, epsilon, q, seed_val, vid_dir, frame_number):
             if test_done:
                 rwrd.append(test_score)
                 break
-    frame_number = record_video(test_env, q , n_epi, vid_dir, frame_number)
+    #frame_number = record_video(test_env, q , n_epi, vid_dir, frame_number)
     mean_score = np.mean(rwrd)
     std_score = round(np.std(rwrd),3)
     print("Episode: {}. Score: {}. Std: {}. Epsilon: {}".format(n_epi, mean_score, std_score, round(epsilon,3)))
@@ -149,7 +127,7 @@ if __name__=="__main__":
     HIDDEN_LAYER_UNITS = 64
     LEARNING_RATE = 0.0005
     DISCOUNT_RATE  = 0.99 
-    EPISODES = 100 # total nusmber of episodes to train for
+    EPISODES = 40 # total nusmber of episodes to train for
     UPDATE_TARGET_INTERVAL = 100  # target update interval for hard update
     TAU = 0.0001 # used when soft update is used
     ############################################
@@ -223,7 +201,11 @@ if __name__=="__main__":
             ep_vec.append(n_epi)
             mean_, std_, frame_number =test(n_epi, epsilon, q, seed_val, vid_dir, frame_number)
             mean_score_vec.append(mean_)
-            std_vec.append(std_)        
+            std_vec.append(std_) 
+            ep_model =  save_model+"_"+str(n_epi)
+            if not os.path.exists(ep_model):
+                os.mkdir(ep_model)
+            q.model.save_weights(ep_model+"/"+"DQN_"+savename+"_"+str(n_epi))      
     ####################################################################   
 
     # ##### plot showing score vs episodes #######
@@ -244,7 +226,7 @@ if __name__=="__main__":
     df = pd.DataFrame(performance_data) 
     df.to_csv(save_performance, index=False)
 
-    q.model.save_weights(save_model)
+    #q.model.save_weights(save_model)
 
     os.system(save_vid_cmd)
     stop_time = timeit.default_timer()
