@@ -161,7 +161,7 @@ if __name__=="__main__":
     TAU = 0.0001 # used when soft update is used
     ############################################
 
-    seed_val = 0
+    seed_val = 3
     soft_update = True # Set to True if you want to do soft update instead of hard update
     log_dir = "final_experiment" # directory name to store log data
     exp_name = "final_experiment" # name of the experiment
