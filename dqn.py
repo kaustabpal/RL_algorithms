@@ -122,12 +122,12 @@ if __name__=="__main__":
 
     ######## hyperparameters###################
     BUFFERLIMIT = 50_000
-    MINI_BATCH_SIZE = 32 
+    MINI_BATCH_SIZE = 256 
     HIDDEN_LAYERS = 2
     HIDDEN_LAYER_UNITS = 64
     LEARNING_RATE = 0.0005
     DISCOUNT_RATE  = 0.99 
-    EPISODES = 40 # total nusmber of episodes to train for
+    EPISODES = 2000 # total nusmber of episodes to train for
     UPDATE_TARGET_INTERVAL = 100  # target update interval for hard update
     TAU = 0.0001 # used when soft update is used
     ############################################
@@ -228,6 +228,6 @@ if __name__=="__main__":
 
     #q.model.save_weights(save_model)
 
-    os.system(save_vid_cmd)
+    #os.system(save_vid_cmd)
     stop_time = timeit.default_timer()
     print("TIME TAKEN: {}".format(stop_time-start_time))
