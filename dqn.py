@@ -119,12 +119,11 @@ class Qnet: # Q-network class
 ######################################################################
 
 def test(n_epi, epsilon, q, seed_val, vid_dir): 
-
-'''
-Function to test the performance of the DQN agent.
-The agent is run in a new test environment for 10 episodes.
-The mean score is used to determine the performance of the agent.
-'''
+    '''
+    Function to test the performance of the DQN agent.
+    The agent is run in a new test environment for 10 episodes.
+    The mean score is used to determine the performance of the agent.
+    '''
     rwrd = [] # vector to store the rewards
     test_env = gym.make("CartPole-v1") # new test environment
     test_env.seed(seed_val) # setting seed for the test_env
@@ -258,6 +257,7 @@ if __name__=="__main__":
             mean_, std_, frame_number =test(n_epi, epsilon, q, seed_val, vid_dir, frame_number)
             mean_score_vec.append(mean_)
             std_vec.append(std_) 
+            # save the main Q-network weights after every 10 episodes
             ep_model =  save_model+"_"+str(n_epi)
             if not os.path.exists(ep_model):
                 os.mkdir(ep_model)

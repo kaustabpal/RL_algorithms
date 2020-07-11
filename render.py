@@ -24,8 +24,9 @@ HIDDEN_LAYERS = 2
 HIDDEN_LAYER_UNITS = 64
 LEARNING_RATE = 0.0005
 DISCOUNT_RATE  = 0.99 
-EPISODES = 40 # total nusmber of episodes to train for
+EPISODES = 2000 # total nusmber of episodes to train for
 ############################################
+k = int(EPISODES/250) # Due to limitation in RAM I can record the video for atmost 50 models in total.
 seed_val = 0
 env = gym.make("CartPole-v1") # select environment. Currently only tested on CartPole-v1
 ###############################
@@ -58,7 +59,7 @@ q = Qnet(
     units = HIDDEN_LAYER_UNITS
     ) # the main Q-network
 ################################
-for i in range(0,EPISODES+1,10):
+for i in range(0,EPISODES+1,k*10): # 
     ep_model =  model_dir+"_"+str(i)
     q.model.load_weights(ep_model+"/"+"DQN_"+savename+"_"+str(i))
     s = env.reset()
